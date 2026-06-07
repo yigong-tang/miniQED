@@ -1,5 +1,6 @@
 proof_output/
-config.yaml
+# config.yaml (contains API keys -- never commit)
+/config.yaml
 __pycache__/
 *.pyc
 .env

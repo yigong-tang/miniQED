@@ -1,1 +1,1 @@
-"""miniQED - A modular multi-agent mathematical proof system."""
+"""Pipeline step modules -- individual proof search, verification, verdict, brainstorm, and selection steps."""

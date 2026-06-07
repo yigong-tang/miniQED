@@ -1,1 +1,1 @@
-"""miniQED - A modular multi-agent mathematical proof system."""
+"""Tests for the miniQED pipeline."""
