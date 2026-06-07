@@ -1,0 +1,72 @@
+# config.example.yaml — miniQED configuration (copy to config.yaml and fill in keys)
+#
+# config.yaml is gitignored — never commit API keys.
+
+adapters:
+  deepseek:
+    type: openai_compatible
+    base_url: https://api.deepseek.com/v1
+    api_key: ${DEEPSEEK_API_KEY}
+
+  # opencode_go:
+  #   type: openai_compatible
+  #   base_url: https://api.opencode.ai/v1
+  #   api_key: ${OPENCODE_API_KEY}
+
+pipeline:
+  max_proof_iterations: 9
+  output_dir: ./proof_output
+
+  literature_survey:
+    adapter: deepseek
+    model: deepseek-v4-pro
+    thinking: true
+    reasoning_effort: high
+
+  simple_mode:
+    proof_search:
+      adapter: deepseek
+      model: deepseek-v4-pro
+      thinking: true
+      reasoning_effort: max
+
+    structural_verifier:
+      adapter: deepseek
+      model: deepseek-v4-flash
+      thinking: false
+
+    detailed_verifier:
+      adapter: deepseek
+      model: deepseek-v4-flash
+      thinking: false
+
+    verdict:
+      adapter: deepseek
+      model: deepseek-v4-flash
+      thinking: false
+
+    # brainstorm:
+    #   enabled: true
+    #   providers:
+    #     - adapter: deepseek
+    #       model: deepseek-v4-flash
+
+    # multi_model:
+    #   enabled: true
+    #   proof_search_providers:
+    #     - adapter: deepseek
+    #       model: deepseek-v4-pro
+    #       thinking: true
+    #       reasoning_effort: max
+    #     - adapter: opencode_go
+    #       model: claude-sonnet-4-6
+    #   verification_providers:
+    #     - adapter: deepseek
+    #       model: deepseek-v4-flash
+    #     - adapter: opencode_go
+    #       model: gpt-5.1
+
+  proof_summary:
+    adapter: deepseek
+    model: deepseek-v4-pro
+    thinking: false
