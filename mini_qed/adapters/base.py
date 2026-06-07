@@ -37,7 +37,7 @@ class AbstractLLMAdapter(ABC):
 
         Args:
             prompt: The user message / task description.
-            system: Optional system prompt (prepended before user message).
+            system: Optional system prompt (sent in the dedicated system role, not concatenated).
             temperature: Sampling temperature (0.0 = deterministic).
             max_tokens: Maximum tokens in the response.
             thinking: If True, enable extended thinking (DeepSeek, Claude).
