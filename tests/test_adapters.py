@@ -79,3 +79,69 @@ class TestOpenAICompatibleAdapter:
             max_tokens=100,
         )
         assert "4" in resp.text
+
+
+from mini_qed.adapters.registry import build_adapter, AdapterRegistry
+from mini_qed.adapters.openai_compatible import OpenAICompatibleAdapter
+from mini_qed.adapters.anthropic_adapter import AnthropicAdapter
+from mini_qed.adapters.openai_adapter import OpenAIAdapter
+
+
+class TestAdapterRegistry:
+    def test_build_openai_compatible_adapter(self):
+        cfg = {
+            "type": "openai_compatible",
+            "base_url": "https://api.deepseek.com/v1",
+            "api_key": "sk-test",
+            "model": "deepseek-v4-flash",
+        }
+        adapter = build_adapter("deepseek", cfg)
+        assert isinstance(adapter, OpenAICompatibleAdapter)
+
+    def test_build_anthropic_adapter(self):
+        cfg = {
+            "type": "anthropic_sdk",
+            "api_key": "sk-test",
+            "model": "claude-sonnet-4-6",
+        }
+        adapter = build_adapter("claude", cfg)
+        assert isinstance(adapter, AnthropicAdapter)
+
+    def test_build_openai_adapter(self):
+        cfg = {
+            "type": "openai_sdk",
+            "api_key": "sk-test",
+            "model": "gpt-5.1",
+        }
+        adapter = build_adapter("openai", cfg)
+        assert isinstance(adapter, OpenAIAdapter)
+
+    def test_build_unknown_type_raises(self):
+        cfg = {"type": "unknown_type", "api_key": "sk-test"}
+        with pytest.raises(ValueError, match="Unknown adapter type"):
+            build_adapter("bad", cfg)
+
+
+class TestAdapterRegistryClass:
+    def test_get_returns_correct_adapter(self):
+        config = {
+            "adapters": {
+                "deepseek": {
+                    "type": "openai_compatible",
+                    "base_url": "https://api.deepseek.com/v1",
+                    "api_key": "sk-test",
+                },
+                "claude": {
+                    "type": "anthropic_sdk",
+                    "api_key": "sk-test",
+                },
+            }
+        }
+        reg = AdapterRegistry(config)
+        adapter = reg.get("deepseek", model="deepseek-v4-flash")
+        assert isinstance(adapter, OpenAICompatibleAdapter)
+
+    def test_get_missing_adapter_raises(self):
+        reg = AdapterRegistry({"adapters": {}})
+        with pytest.raises(ValueError, match="not found"):
+            reg.get("nonexistent")
