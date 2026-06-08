@@ -164,8 +164,49 @@ def main() -> None:
     parser.add_argument("--config", default="config.yaml")
     parser.add_argument("--input", default="problem/problem.tex")
     parser.add_argument("--output", default=None)
+    parser.add_argument(
+        "--learn", action="store_true",
+        help="After proof generation, launch interactive learning session"
+    )
+    parser.add_argument(
+        "--learn-only", action="store_true",
+        help="Skip proof generation, launch learning session with existing proof"
+    )
     args = parser.parse_args()
+
+    if args.learn_only:
+        # Launch learning mode directly
+        from mini_qed.learning.tutor import _main as learn_main
+        sys.argv = [
+            "tutor", "--config", args.config,
+            "--problem", args.input,
+        ]
+        if args.output:
+            sys.argv += ["--proof", f"{args.output}/proof.md",
+                         "--summary", f"{args.output}/proof_effort_summary.md"]
+        asyncio.run(learn_main())
+        return
+
     success = asyncio.run(run_pipeline(args.config, args.input, args.output))
+
+    if args.learn:
+        # After pipeline, launch learning session
+        pipeline_config, _ = load_pipeline_config(args.config)
+        out = args.output or pipeline_config.output_dir
+        from mini_qed.learning.tutor import _main as learn_main
+        proof_path = os.path.join(out, "proof.md")
+        summary_path = os.path.join(out, "proof_effort_summary.md")
+        if os.path.exists(proof_path):
+            sys.argv = [
+                "tutor", "--config", args.config,
+                "--problem", args.input,
+                "--proof", proof_path,
+                "--summary", summary_path,
+            ]
+            asyncio.run(learn_main())
+        else:
+            print("No proof.md found — skipping learning session.")
+
     sys.exit(0 if success else 1)
 
 

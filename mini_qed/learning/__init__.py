@@ -1,0 +1,1 @@
+"""miniQED Learning Agent — interactive guided learning module."""
