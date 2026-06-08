@@ -10,8 +10,7 @@ from mini_qed.adapters.base import AbstractLLMAdapter
 from mini_qed.adapters.registry import AdapterRegistry
 from mini_qed.config import load_pipeline_config
 from mini_qed.logging import TokenTracker
-from mini_qed.stages.stage0_survey import run_literature_survey
-from mini_qed.stages.stage1_simple import _parse_difficulty, run_simple_proof_loop
+from mini_qed.stages.stage1_simple import run_simple_proof_loop
 from mini_qed.stages.stage2_summary import run_summary
 
 
@@ -64,21 +63,18 @@ async def run_pipeline(
             with open(path, encoding="utf-8") as f:
                 prompts[name] = f.read()
 
-    # Stage 0
-    print("\n" + "=" * 60 + "\n  STAGE 0: Literature Survey\n" + "=" * 60 + "\n")
-    survey_cfg = pipeline_config.literature_survey
-    survey_adapter = registry.get(survey_cfg.adapter, model=survey_cfg.model)
-    related_info_dir = await run_literature_survey(
-        adapter=survey_adapter,
-        model=survey_cfg.model,
-        problem_file=problem_file,
-        output_dir=out,
-        prompt_template_content=prompts["literature_survey"],
-        prove_skill=prove_skill,
-        tracker=tracker,
-    )
-    difficulty = _parse_difficulty(out)
-    print(f"\n  Difficulty: {difficulty}\n")
+    # Stage 0: Skipped (frozen — literature survey requires tool calling, Phase 2)
+    # Create minimal related_info for downstream compatibility
+    related_info_dir = os.path.join(out, "related_info")
+    os.makedirs(related_info_dir, exist_ok=True)
+    difficulty_path = os.path.join(related_info_dir, "difficulty_evaluation.md")
+    with open(difficulty_path, "w", encoding="utf-8") as f:
+        f.write("## Classification: Medium\n\nAuto-classified. Literature survey frozen in Phase 1.\n")
+    related_path = os.path.join(related_info_dir, "related_work.md")
+    with open(related_path, "w", encoding="utf-8") as f:
+        f.write("# Related Work\n\nLiterature survey is frozen in Phase 1. Proceeding with proof directly.\n")
+    difficulty = "medium"
+    print(f"\n  Difficulty: {difficulty} (literature survey frozen)\n")
 
     # Stage 1
     print(
